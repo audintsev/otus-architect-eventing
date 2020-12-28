@@ -1,6 +1,8 @@
 package me.udintsev.otus.architect.eventing.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.udintsev.otus.architect.eventing.order.domain.Order;
+import me.udintsev.otus.architect.eventing.order.domain.OrderItem;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

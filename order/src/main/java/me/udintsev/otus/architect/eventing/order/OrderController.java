@@ -3,6 +3,9 @@ package me.udintsev.otus.architect.eventing.order;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.udintsev.otus.architect.eventing.order.domain.Order;
+import me.udintsev.otus.architect.eventing.order.domain.OrderItem;
+import me.udintsev.otus.architect.eventing.order.domain.OrderStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +14,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.List;
-import java.util.Random;
 import java.util.function.Supplier;
 
 

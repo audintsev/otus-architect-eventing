@@ -1,4 +1,4 @@
-package me.udintsev.otus.architect.eventing.order;
+package me.udintsev.otus.architect.eventing.order.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

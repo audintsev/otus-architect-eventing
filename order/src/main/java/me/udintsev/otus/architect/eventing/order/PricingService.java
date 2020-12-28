@@ -1,5 +1,6 @@
 package me.udintsev.otus.architect.eventing.order;
 
+import me.udintsev.otus.architect.eventing.order.domain.OrderItem;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
