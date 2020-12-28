@@ -30,7 +30,9 @@ public class OrderController {
     private final Sinks.Many<Order> orderCreatedSink = Sinks.many().unicast().onBackpressureBuffer();
     private final Sinks.Many<Order> orderCheckedOutSink = Sinks.many().unicast().onBackpressureBuffer();
 
+    //
     // Expose sinks as event channels
+    //
 
     @Bean
     public Supplier<Flux<Order>> orderCreated() {
@@ -41,6 +43,10 @@ public class OrderController {
     public Supplier<Flux<Order>> orderCheckedOut() {
         return orderCheckedOutSink::asFlux;
     }
+
+    //
+    // REST methods
+    //
 
     @GetMapping
     public List<Order> listOrders() {
