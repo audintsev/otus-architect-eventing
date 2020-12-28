@@ -27,6 +27,19 @@ public class OrderController {
     private final OrderRepository orderRepository;
 
     private final Sinks.Many<Order> orderCreatedSink = Sinks.many().unicast().onBackpressureBuffer();
+    private final Sinks.Many<Order> orderCheckedOutSink = Sinks.many().unicast().onBackpressureBuffer();
+
+    // Expose sinks as event channels
+
+    @Bean
+    public Supplier<Flux<Order>> orderCreated() {
+        return orderCreatedSink::asFlux;
+    }
+
+    @Bean
+    public Supplier<Flux<Order>> orderCheckedOut() {
+        return orderCheckedOutSink::asFlux;
+    }
 
     @GetMapping
     public List<Order> listOrders() {
@@ -57,11 +70,6 @@ public class OrderController {
         return savedOrder;
     }
 
-    @Bean
-    public Supplier<Flux<Order>> orderCreated() {
-        return orderCreatedSink::asFlux;
-    }
-
     @GetMapping("{orderId}")
     public ResponseEntity<Order> getOrder(@PathVariable long orderId) {
         return ResponseEntity.of(orderRepository.findById(orderId));
@@ -73,7 +81,9 @@ public class OrderController {
         return orderRepository.findById(orderId)
                 .map(order -> {
                     order.setStatus(OrderStatus.CHECKED_OUT);
-                    return orderRepository.save(order);
+                    var savedOrder = orderRepository.save(order);
+                    orderCheckedOutSink.tryEmitNext(savedOrder).orThrow();
+                    return savedOrder;
                 })
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
