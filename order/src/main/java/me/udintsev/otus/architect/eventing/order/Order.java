@@ -27,4 +27,7 @@ public class Order {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Column(nullable = false)
+    private long price;
 }

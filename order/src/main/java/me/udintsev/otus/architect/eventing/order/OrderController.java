@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.util.List;
+import java.util.Random;
 import java.util.function.Supplier;
 
 
@@ -22,6 +23,7 @@ public class OrderController {
     public static final String API_ROOT = "/api/v1/orders";
 
     private final OrderRepository orderRepository;
+    private final PricingService pricingService;
 
     private final Sinks.Many<Order> orderCreatedSink = Sinks.many().unicast().onBackpressureBuffer();
     private final Sinks.Many<Order> orderCheckedOutSink = Sinks.many().unicast().onBackpressureBuffer();
@@ -58,7 +60,8 @@ public class OrderController {
                 null,
                 userId,
                 createOrderRequest.getItems(),
-                OrderStatus.CREATED
+                OrderStatus.CREATED,
+                pricingService.calculatePriceForOrder(userId, createOrderRequest.getItems())
         );
         var savedOrder = orderRepository.save(newOrder);
 
