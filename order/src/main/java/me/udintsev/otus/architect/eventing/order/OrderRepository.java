@@ -1,4 +1,4 @@
-package me.udintsev.otus.architect.eventing.eventingorder;
+package me.udintsev.otus.architect.eventing.order;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
