@@ -35,11 +35,12 @@ class OrderApplicationTests {
         var responseContent = mvc.perform(
                 post(OrderController.API_ROOT)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-User-Id", "john.doe@example.com")
                         .content(objectMapper.writeValueAsString(createOrderRequest))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").isNumber())
-                .andExpect(jsonPath("userId").isNumber())
+                .andExpect(jsonPath("userId").value("john.doe@example.com"))
                 .andExpect(jsonPath("status").value("created"))
                 .andExpect(jsonPath("items").isArray())
                 .andExpect(jsonPath("items.length()").value(2))

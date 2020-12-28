@@ -33,10 +33,11 @@ public class OrderController {
 
     @PostMapping
     @Transactional
-    public Order createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
+    public Order createOrder(@RequestHeader("X-User-Id") String userId,
+                             @RequestBody CreateOrderRequest createOrderRequest) {
         Order newOrder = new Order(
                 null,
-                10,
+                userId,
                 createOrderRequest.getItems(),
                 OrderStatus.CREATED
         );

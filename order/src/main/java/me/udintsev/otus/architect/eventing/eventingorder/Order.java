@@ -18,7 +18,7 @@ public class Order {
     private Long id;
 
     @Column(nullable = false)
-    private long userId;
+    private String userId;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @JoinColumn(name = "ORDER_ID")
