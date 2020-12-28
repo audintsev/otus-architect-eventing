@@ -7,20 +7,25 @@ import me.udintsev.otus.architect.eventing.billing.domain.OrderStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Component
 @AllArgsConstructor
 @Slf4j
-public class OrderProcessor implements Function<Order, Order> {
+public class BillingFunction implements Function<Order, Optional<Order>> {
 
     private final AccountRepository accountRepository;
 
     @Transactional
-    public Order apply(Order order) {
+    public Optional<Order> apply(Order order) {
         log.info("Received order: {}", order);
 
-        return accountRepository.findById(order.getUserId())
+        if (order.getStatus() != OrderStatus.CHECKED_OUT) {
+            return Optional.empty();
+        }
+
+        var result = accountRepository.findById(order.getUserId())
                 .map(account -> {
                     if (account.getAmount() >= order.getPrice()) {
                         account.setAmount(account.getAmount() - order.getPrice());
@@ -37,5 +42,6 @@ public class OrderProcessor implements Function<Order, Order> {
                     order.setStatus(OrderStatus.PAYMENT_FAILED);
                     return order;
                 });
+        return Optional.of(result);
     }
 }

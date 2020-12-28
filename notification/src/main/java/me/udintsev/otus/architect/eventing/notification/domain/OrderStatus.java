@@ -1,4 +1,4 @@
-package me.udintsev.otus.architect.eventing.billing.domain;
+package me.udintsev.otus.architect.eventing.notification.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

@@ -85,15 +85,18 @@ public class OrderController {
 
     @PostMapping("{orderId}/checkout")
     @Transactional
-    public ResponseEntity<Order> checkoutOrder(@PathVariable long orderId) {
+    public ResponseEntity<?> checkoutOrder(@PathVariable long orderId) {
         return orderRepository.findById(orderId)
                 .map(order -> {
-                    order.setStatus(OrderStatus.CHECKED_OUT);
-                    var savedOrder = orderRepository.save(order);
-                    orderCheckedOutSink.tryEmitNext(savedOrder).orThrow();
-                    return savedOrder;
+                    if (order.getStatus() == OrderStatus.CREATED) {
+                        order.setStatus(OrderStatus.CHECKED_OUT);
+                        var savedOrder = orderRepository.save(order);
+                        orderCheckedOutSink.tryEmitNext(savedOrder).orThrow();
+                        return ResponseEntity.ok(savedOrder);
+                    } else {
+                        return ResponseEntity.badRequest().body("Order must be in status CREATED");
+                    }
                 })
-                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

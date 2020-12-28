@@ -8,8 +8,7 @@ public enum OrderStatus {
     CREATED,
     CHECKED_OUT,
     PAYMENT_SUCCEEDED,
-    PAYMENT_FAILED,
-    FULFILLED;
+    PAYMENT_FAILED;
 
     @JsonValue
     public String getJsonValue() {
