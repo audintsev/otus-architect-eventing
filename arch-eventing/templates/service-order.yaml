@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "arch-eventing.fullname" . }}-order
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "arch-eventing.labels.order" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.order.type }}
+  ports:
+    - port: {{ .Values.service.order.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+  {{- include "arch-eventing.selectorLabels.order" . | nindent 4 }}

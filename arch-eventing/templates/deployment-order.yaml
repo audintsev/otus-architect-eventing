@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "arch-eventing.fullname" . }}-order
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arch-eventing.labels.order" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "arch-eventing.selectorLabels.order" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "arch-eventing.selectorLabels.order" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config-order.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-order
+          image: "{{ .Values.image.order }}:{{ .Chart.AppVersion }}"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: "{{ include "arch-eventing.name" . }}-order"
+            - secretRef:
+                name: "{{ include "arch-eventing.name" . }}-order"
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/liveness
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/readiness
+            initialDelaySeconds: 10
+            periodSeconds: 5

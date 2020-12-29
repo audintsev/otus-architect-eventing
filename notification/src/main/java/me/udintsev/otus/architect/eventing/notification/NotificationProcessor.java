@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.udintsev.otus.architect.eventing.notification.domain.Notification;
 import me.udintsev.otus.architect.eventing.notification.domain.Order;
+import me.udintsev.otus.architect.eventing.notification.domain.OrderItem;
 import me.udintsev.otus.architect.eventing.notification.domain.OrderStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -34,7 +36,8 @@ public class NotificationProcessor implements Consumer<Order> {
         }
 
         message += " Supplementary info: orderId=" + order.getId() + ", total: " + order.getPrice()
-                + ", number of articles: " + Optional.ofNullable(order.getItems()).map(List::size).orElse(0);
+                + ", number of articles: " + Optional.ofNullable(order.getItems()).map(List::size).orElse(0)
+                + ", number of items: " + Optional.ofNullable(order.getItems()).stream().flatMap(Collection::stream).mapToInt(OrderItem::getQuantity).sum();
 
         notificationRepository.save(new Notification(
                 null,

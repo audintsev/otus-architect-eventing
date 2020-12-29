@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "arch-eventing.fullname" . }}-billing
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arch-eventing.labels.billing" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "arch-eventing.selectorLabels.billing" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "arch-eventing.selectorLabels.billing" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config-billing.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-billing
+          image: "{{ .Values.image.billing }}:{{ .Chart.AppVersion }}"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: "{{ include "arch-eventing.name" . }}-billing"
+            - secretRef:
+                name: "{{ include "arch-eventing.name" . }}-billing"
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/liveness
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /actuator/health/readiness
+            initialDelaySeconds: 10
+            periodSeconds: 5

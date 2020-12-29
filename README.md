@@ -14,6 +14,23 @@ The three service collaboration styles:
 
   ![Event Collaboration diagram](README.assets/event-collaboration.png)
 
+# Building and pushing
+
+```
+cd order
+../gradlew bootBuildImage --imageName=udintsev/hw15-order:latest
+docker push udintsev/hw15-order:latest
+
+cd ../billing
+../gradlew bootBuildImage --imageName=udintsev/hw15-billing:latest
+docker push udintsev/hw15-billing:latest
+
+cd ../notification
+../gradlew bootBuildImage --imageName=udintsev/hw15-notification:latest
+docker push udintsev/hw15-notification:latest
+
+```
+
 # REST API
 
 ```
@@ -28,6 +45,18 @@ curl -H "Content-Type: application/json" localhost:8080/api/v1/orders/1/checkout
 
 # List notifications
 curl localhost:8082/api/v1/notification
+```
+
+Same with host arch.labs:
+```
+curl -H "Content-Type: application/json" -H "X-User-Id: john.doe@example.com" arch.labs/otusapp/audintsev/billing/api/v1/billing/deposit -X POST -v -d '{"amount": 100}'
+
+curl -H "Content-Type: application/json" -H "X-User-Id: john.doe@example.com" arch.labs/otusapp/audintsev/order/api/v1/orders -d '{"items": [{"itemId": 10, "quantity": 1}, {"itemId": 22, "quantity": 3}]}'
+curl arch.labs/otusapp/audintsev/order/api/v1/orders
+
+curl -H "Content-Type: application/json" arch.labs/otusapp/audintsev/order/api/v1/orders/1/checkout -X POST
+
+curl arch.labs/otusapp/audintsev/notification/api/v1/notification
 ```
 
 # Putting OpenAPI specs to use
