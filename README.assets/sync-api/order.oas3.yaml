@@ -1,0 +1,147 @@
+openapi: 3.0.0
+
+info:
+  version: '0.1.0'
+  title: Orders Service (Sync API)
+
+paths:
+  # Orders
+
+  /api/v1/orders:
+    post:
+      summary: Create an order
+      operationId: createOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '200':
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /api/v1/orders/{orderId}:
+    get:
+      summary: Get getails about an order
+      operationId: getOrder
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: The requested order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /api/v1/orders/{orderId}/checkout:
+    post:
+      summary: Checkout an order
+      operationId: checkoutOrder
+      parameters:
+        - $ref: '#/components/parameters/orderId'
+      responses:
+        '200':
+          description: Order has been checked out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              example:
+                id: 45
+                userId: 'john.doe@example.com'
+                items:
+                  - itemId: 123
+                    quantity: 2
+                  - itemId: 321
+                    quantity: 3
+                status: payment_succeeded
+
+components:
+  parameters:
+    orderId:
+      name: orderId
+      in: path
+      required: true
+      description: The ID of the order
+      schema:
+        $ref: '#/components/schemas/OrderId'
+
+  schemas:
+    OrderItemId:
+      type: integer
+      format: int64
+      example: 123
+    OrderItem:
+      required:
+        - itemId
+        - quantity
+      properties:
+        itemId:
+          $ref: '#/components/schemas/OrderItemId'
+        quantity:
+          type: integer
+          format: int32
+      example:
+        itemId: 123
+        quantity: 2
+
+    OrderId:
+      type: integer
+      format: int64
+      example: 45
+    UserId:
+      type: string
+      format: email
+      example: 'john.doe@example.com'
+    OrderStatus:
+      type: string
+      enum:
+        - created
+        - payment_succeeded
+        - payment_failed
+      default: created
+    Order:
+      required:
+        - id
+        - userId
+        - items
+        - status
+      properties:
+        id:
+          $ref: '#/components/schemas/OrderId'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+      example:
+        id: 45
+        userId: 'jane.doe@example.com'
+        items:
+          - itemId: 123
+            quantity: 2
+          - itemId: 321
+            quantity: 3
+        status: created
+    CreateOrderRequest:
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+      example:
+        items:
+          - itemId: 123
+            quantity: 2
+          - itemId: 321
+            quantity: 3

@@ -1,18 +1,44 @@
 # Eventing
 
-The three service collaboration styles:
 
-* Sync API
- 
-  ![Sync API diagram](README.assets/sync-api.png)
+## Sync API
 
-* Notification-assisted
+On order checkout, Order Service invokes withdrawal in Billing Service, and upon completion, invokes Notification Service - all synchronously.
 
-  ![Notification-assisted diagram](README.assets/notification-assisted.png)
+* Order Service API: [spec](README.assets/sync-api/order.oas3.yaml), [SwaggerHub](https://app.swaggerhub.com/apis/audintsev/orders-service_sync_api/0.1.0)
+* Billing Service API: [spec](README.assets/sync-api/billing.oas3.yaml), [SwaggerHub](https://app.swaggerhub.com/apis/audintsev/billing-service_sync_api/0.1.0)
+* Notification Service API: [spec](README.assets/sync-api/notification.oas3.yaml), [SwaggerHub](https://app.swaggerhub.com/apis/audintsev/notification-service_sync_api/0.1.0)
 
-* Event Collaboration
+![Sync API diagram](README.assets/sync-api/sequence.png)
 
-  ![Event Collaboration diagram](README.assets/event-collaboration.png)
+## Notification-Assisted
+
+On order checkout, Order Service publishes a *notification* to the `order-checked-out` topic. The message only contains ID of the order.
+
+Billing Service listens the `order-checked-out` topic, extracts ID from the message, and triggers Order Service to get the details about the order (it's price).
+Then Billing Service attempts to withdraw order price from user's account, and publishes a notification to the `billing-processed` topic.
+This notification contains orderId and billing status: success or failure.
+
+Both Order Service and Notification Service listen the `billing-processed` topic.
+Billing Service updates order status in the DB.
+Notification Service extracts orderId and billing status from the message, contacts Order Service to get info about the order (price, user, etc),
+and then notifies the user by _sending an email_.
+
+![Notification-assisted diagram](README.assets/notification-assisted/sequence.png)
+
+## Event Collaboration
+
+On order checkout, Order Service publishes a *complete order object* to the `order-checked-out` topic.
+
+Billing Service listens the `order-checked-out` topic, extracts all necessary information about the order from the message, including its price.
+Then Billing Service attempts to withdraw order price from user's account, and publishes *complete updated order object* to the `billing-processed` topic.
+
+Both Order Service and Notification Service listen the `billing-processed` topic.
+Billing Service updates order status in the DB.
+Notification Service extracts order details and billing status from the message, and then notifies the user by _sending an email_.
+
+![Event Collaboration diagram](README.assets/event-collaboration/sequence.png)
+
 
 # Building and pushing
 

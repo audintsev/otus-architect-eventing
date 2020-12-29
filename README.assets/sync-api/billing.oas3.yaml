@@ -1,0 +1,120 @@
+openapi: 3.0.0
+
+info:
+  version: '0.1.0'
+  title: Billing Service (Sync API)
+
+paths:
+
+  /api/v1/account:
+    post:
+      summary: Create an account and deposit money
+      operationId: createAccountAndDepositMoney
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '200':
+          description: Created account and/or money deposited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+  /api/v1/account/{userId}:
+    get:
+      summary: Get user account
+      operationId: getUserAccount
+      parameters:
+        - $ref: '#/components/parameters/userId'
+
+      responses:
+        '200':
+          description: User account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+  /api/v1/account/{userId}/deposit:
+    post:
+      summary: Deposit money
+      operationId: depositMoney
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Amount'
+
+      responses:
+        '200':
+          description: User account with new amount
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+  /api/v1/account/{userId}/withdraw:
+    post:
+      summary: Withdraw money
+      operationId: withdrawMoney
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Amount'
+
+      responses:
+        '200':
+          description: User account with new amount
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Not enough money to withdraw
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+
+components:
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      description: The ID of the user
+      schema:
+        $ref: '#/components/schemas/UserId'
+
+  schemas:
+    UserId:
+      type: string
+      format: email
+      example: 'john.doe@example.com'
+
+    Account:
+      required:
+        - userId
+        - amount
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        amount:
+          type: integer
+          example: 100
+
+    Amount:
+      required:
+        - amount
+      properties:
+        amount:
+          type: integer
+          example: 10

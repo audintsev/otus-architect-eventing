@@ -1,0 +1,79 @@
+openapi: 3.0.0
+
+info:
+  version: '0.1.0'
+  title: Notification Service (Sync API)
+
+paths:
+
+  /api/v1/notifications/{userId}:
+    get:
+      summary: List user notifications
+      operationId: listUserNotifications
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: An array of notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notifications'
+
+  /api/v1/notifications:
+    post:
+      summary: Send notification
+      operationId: sendNotification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+      responses:
+        '204':
+          description: Notification has been sent
+
+components:
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      description: The ID of the user
+      schema:
+        $ref: '#/components/schemas/UserId'
+
+  schemas:
+    UserId:
+      type: string
+      format: email
+      example: 'john.doe@example.com'
+
+    NotificationRequest:
+      required:
+        - userId
+        - message
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        message:
+          type: string
+
+    Notification:
+      required:
+        - userId
+        - sentAt
+        - message
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        sentAt:
+          type: string
+          format: 'date-time'
+        message:
+          type: string
+
+    Notifications:
+      type: array
+      items:
+        $ref: '#/components/schemas/Notification'
