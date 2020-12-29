@@ -33,7 +33,7 @@ docker push udintsev/hw15-notification:latest
 
 # REST API
 
-```
+```shell
 # Create account in billing and deposit money
 curl -H "Content-Type: application/json" -H "X-User-Id: john.doe@example.com" localhost:8081/api/v1/billing/deposit -X POST -v -d '{"amount": 100}'
 
@@ -48,7 +48,7 @@ curl localhost:8082/api/v1/notification
 ```
 
 Same with host arch.labs:
-```
+```shell
 curl -H "Content-Type: application/json" -H "X-User-Id: john.doe@example.com" arch.labs/otusapp/audintsev/billing/api/v1/billing/deposit -X POST -v -d '{"amount": 100}'
 
 curl -H "Content-Type: application/json" -H "X-User-Id: john.doe@example.com" arch.labs/otusapp/audintsev/order/api/v1/orders -d '{"items": [{"itemId": 10, "quantity": 1}, {"itemId": 22, "quantity": 3}]}'
@@ -57,6 +57,12 @@ curl arch.labs/otusapp/audintsev/order/api/v1/orders
 curl -H "Content-Type: application/json" arch.labs/otusapp/audintsev/order/api/v1/orders/1/checkout -X POST
 
 curl arch.labs/otusapp/audintsev/notification/api/v1/notification
+```
+
+Running postman collection against my dev env:
+
+```shell
+newman run --env-var "baseUrl=http://arch.labs" postman_collection.json
 ```
 
 # Putting OpenAPI specs to use

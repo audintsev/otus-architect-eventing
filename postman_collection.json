@@ -1,0 +1,829 @@
+{
+	"info": {
+		"_postman_id": "d990821e-0c6f-4722-9974-0f62066360d9",
+		"name": "OTUS Architect Homework 15 (eventing)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create user in billing and deposit money",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e36fa1a4-b187-4067-bbdf-16f9bda232d0",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "d8dba790-387b-4fd8-a065-99ab92a3abe5",
+						"exec": [
+							"pm.environment.set(\"userEmail\", pm.variables.replaceIn('{{$randomEmail}}'))\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{userEmail}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"amount\": 100\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{billingUrl}}/api/v1/billing/deposit",
+					"host": [
+						"{{billingUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"billing",
+						"deposit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user account in billing",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e5c04eca-24d5-4d8c-89ac-f41dcb0373ff",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const amount = responseJSON.amount\r",
+							"tests[`amount == 100`] = amount === 100\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "9291dae6-42e2-4895-b136-9979ec2e2462",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{userEmail}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{billingUrl}}/api/v1/billing",
+					"host": [
+						"{{billingUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"billing"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create 1st order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5146fc82-7af4-4831-9f5b-0c42b20ccbaa",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const orderId = responseJSON.id\r",
+							"tests[`orderId != null`] = orderId != null\r",
+							"pm.environment.set(\"orderId\", orderId);\r",
+							"\r",
+							"const orderStatus = responseJSON.status\r",
+							"tests[`status == created`] = orderStatus === 'created'\r",
+							"\r",
+							"const orderPrice = responseJSON.price\r",
+							"tests[`price == 70`] = orderPrice === 70\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "95aef206-dab3-4baa-b6bd-742bdc9879b3",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"itemId\": 10,\r\n            \"quantity\": 2\r\n        },\r\n        {\r\n            \"itemId\": 22,\r\n            \"quantity\": 5\r\n        }\r\n    ]\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{orderUrl}}/api/v1/orders",
+					"host": [
+						"{{orderUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Checkout 1st order (async trigger billing)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a85d9723-f70f-485c-a792-195faa2c7f12",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const orderStatus = responseJSON.status\r",
+							"tests[`status == checked_out`] = orderStatus === 'checked_out'\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "fbcae77f-06db-4a50-8be5-861f343cf963",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{orderUrl}}/api/v1/orders/{{orderId}}/checkout",
+					"host": [
+						"{{orderUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{orderId}}",
+						"checkout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Wait and get 1st order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "918304a4-4be0-4bdf-8f31-8caa139cee5e",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const orderStatus = responseJSON.status\r",
+							"tests[`status == payment_succeeded`] = orderStatus === 'payment_succeeded'\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "4c3d04bf-57e2-4fb5-aabd-16ba76157a36",
+						"exec": [
+							"setTimeout(function(){}, pm.variables.get(\"waitTimeMs\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{orderUrl}}/api/v1/orders/{{orderId}}",
+					"host": [
+						"{{orderUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{orderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user account in billing after 1st order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "009d1c9f-04d5-4e44-99c3-42f376d0356b",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const amount = responseJSON.amount\r",
+							"tests[`amount == 30`] = amount === 30\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "ad64f2a4-1032-4bc2-9b9f-a1fd667ad1a9",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"url": {
+					"raw": "{{billingUrl}}/api/v1/billing",
+					"host": [
+						"{{billingUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"billing"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user notifications after 1st order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f9338471-e357-495b-b2ce-61b41219e846",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"tests[`Two notifications`] = responseJSON.length === 1\r",
+							"tests[`Notification starts with \"YES!!!\"`] = responseJSON[0].message.startsWith('YES!!!')\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "32fa2a75-3d0d-444d-9110-876c709e1b72",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"url": {
+					"raw": "{{notificationUrl}}/api/v1/notification",
+					"host": [
+						"{{notificationUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"notification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create 2nd order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8f86a3a7-3937-4abc-b184-9dc5cda77511",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const orderId = responseJSON.id\r",
+							"tests[`orderId != null`] = orderId != null\r",
+							"pm.environment.set(\"anotherOrderId\", orderId);\r",
+							"\r",
+							"const orderStatus = responseJSON.status\r",
+							"tests[`status == created`] = orderStatus === 'created'\r",
+							"\r",
+							"const orderPrice = responseJSON.price\r",
+							"tests[`price == 50`] = orderPrice === 50\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "96cbc32d-146e-4fbf-8fc5-1265b1203f3d",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"itemId\": 35,\r\n            \"quantity\": 2\r\n        },\r\n        {\r\n            \"itemId\": 45,\r\n            \"quantity\": 3\r\n        }\r\n    ]\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{orderUrl}}/api/v1/orders",
+					"host": [
+						"{{orderUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Checkout 2nd order (async trigger billing)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f0a38b46-2373-429d-8fbe-93066df9c10b",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const orderStatus = responseJSON.status\r",
+							"tests[`status == checked_out`] = orderStatus === 'checked_out'\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e44a12bb-6f8f-4a91-8748-c39e858f5f81",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{orderUrl}}/api/v1/orders/{{anotherOrderId}}/checkout",
+					"host": [
+						"{{orderUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{anotherOrderId}}",
+						"checkout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Wait and get 2nd order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7db5eb68-9b07-40ae-a38e-a929c6744741",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const orderStatus = responseJSON.status\r",
+							"tests[`status == payment_failed`] = orderStatus === 'payment_failed'\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "b74fc3e6-ce75-4b89-ba9c-871cb57e8bc4",
+						"exec": [
+							"setTimeout(function(){}, pm.variables.get(\"waitTimeMs\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{orderUrl}}/api/v1/orders/{{anotherOrderId}}",
+					"host": [
+						"{{orderUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{anotherOrderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user account in billing after 2nd order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "44683dea-7d41-4bb3-ae57-a7b844522b14",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"const amount = responseJSON.amount\r",
+							"tests[`amount == 30`] = amount === 30\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "58c8983d-7019-4c2d-8c7f-5a8bfb329c87",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"url": {
+					"raw": "{{billingUrl}}/api/v1/billing",
+					"host": [
+						"{{billingUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"billing"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user notifications after 2nd order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "744856b6-2e55-4709-a46e-ab4388926252",
+						"exec": [
+							"tests[`Status code ${pm.response.code} is 200`] = pm.response.code === 200\r",
+							"\r",
+							"var responseJSON = JSON.parse(responseBody)\r",
+							"\r",
+							"tests[`Two notifications`] = responseJSON.length === 2\r",
+							"tests[`First notification starts with \"YES!!!\"`] = responseJSON[0].message.startsWith('YES!!!')\r",
+							"tests[`Second notification starts with \"Ohh... no....\"`] = responseJSON[1].message.startsWith('Ohh... no....')\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "71a454a4-2559-4c25-843f-beb0e6ea26aa",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"type": "text",
+						"value": "{{userEmail}}"
+					}
+				],
+				"url": {
+					"raw": "{{notificationUrl}}/api/v1/notification",
+					"host": [
+						"{{notificationUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"notification"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "0a92cd99-565c-4b08-bab1-8c59aeecac9c",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "a85ab41a-6016-4dc7-b1b2-4fc8361c77ca",
+				"type": "text/javascript",
+				"exec": [
+					"const reqData = (typeof request['data'] === 'object') ? JSON.stringify(request['data'])",
+					"    : (typeof pm.request.body === 'object') ? pm.request.body.toString()",
+					"    : '-';",
+					"",
+					"tests[\"[INFO] Request: \" +  reqData] = true;",
+					"tests[\"[INFO] Response: \" + pm.response.code + \" \" + pm.response.status + \", body: \" + responseBody] = true;",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "9d189f31-c5d4-4870-80f7-4f2706dfc5da",
+			"key": "baseUrl",
+			"value": "http://arch.homework"
+		},
+		{
+			"id": "f08b2a5c-3bdb-426e-abb6-e0e008de2432",
+			"key": "pathPrefix",
+			"value": "/otusapp/audintsev"
+		},
+		{
+			"id": "14097d2f-ccc4-460a-852b-04f4e9edb577",
+			"key": "orderUrl",
+			"value": "{{baseUrl}}{{pathPrefix}}/order"
+		},
+		{
+			"id": "b74910a8-d8c1-4e42-b1bc-7a80e3bee79c",
+			"key": "billingUrl",
+			"value": "{{baseUrl}}{{pathPrefix}}/billing"
+		},
+		{
+			"id": "18138a5f-e17a-4c59-89be-d2b8a46461bd",
+			"key": "notificationUrl",
+			"value": "{{baseUrl}}{{pathPrefix}}/notification"
+		},
+		{
+			"id": "9420fd18-2b57-47a1-bd40-60a6096ff5ce",
+			"key": "waitTimeMs",
+			"value": "1000"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
