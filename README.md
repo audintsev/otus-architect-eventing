@@ -25,6 +25,9 @@ curl -H "Content-Type: application/json" -H "X-User-Id: john.doe@example.com" lo
 
 # Checkout order
 curl -H "Content-Type: application/json" localhost:8080/api/v1/orders/1/checkout -X POST
+
+# List notifications
+curl localhost:8082/api/v1/notification
 ```
 
 # Putting OpenAPI specs to use
