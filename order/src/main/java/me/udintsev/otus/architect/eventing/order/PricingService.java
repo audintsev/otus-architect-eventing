@@ -13,6 +13,8 @@ public class PricingService {
             return 0L;
         }
 
-        return items.size() * 10L;
+        return items.stream()
+                .mapToLong(i -> i.getQuantity() * 10L)
+                .sum();
     }
 }
